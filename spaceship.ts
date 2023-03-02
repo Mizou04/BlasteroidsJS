@@ -20,29 +20,37 @@ class Spaceship extends Actor{
 		ctx.restore();
 	}
 
-	speedUp(vec : Vector){
-		this.velo2D = this.velo2D.add(vec);
+	speedUp(g : number){
+		let x = g * Math.sin(this.rotation), y = g * Math.cos(this.rotation);
+		this.velo2D = this.velo2D.add(
+			new Vector(-x, y)
+		);
 	}
-	speedDown(vec : Vector){
-		this.velo2D = this.velo2D.subtract(vec);
+	speedDown(g : number){
+		let x = g * Math.sin(this.rotation), y = g * Math.cos(this.rotation);
+		this.velo2D = this.velo2D.subtract(
+			new Vector(x, -y)
+		);	
 	}
 
 	move(ctx : CanvasRenderingContext2D){
 		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-		this.pos2D = this.pos2D.add(this.velo2D);
-		if(this.pos2D.x + this.w <= 0){
-			this.pos2D.x = ctx.canvas.width; 
+		this.pos2D = this.pos2D.subtract(this.velo2D);
+
+		if(this.pos2D.x <= 0){
+			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
 		}
-		if(this.pos2D.y + this.h <= 0){
-			console.log(this.pos2D);
+
+		if(this.pos2D.y <= 0){
 			this.pos2D = new Vector(this.pos2D.x, ctx.canvas.height); 
 		}
-		if(this.pos2D.x > ctx.canvas.width){
-			this.pos2D.x = 0 - this.w; 
 
+		if(this.pos2D.x > ctx.canvas.width){
+			this.pos2D = new Vector(0, this.pos2D.y); 
 		}
+
 		if(this.pos2D.y > ctx.canvas.height){
-			this.pos2D.y = 0 + this.h; 
+			this.pos2D = new Vector(this.pos2D.x, 0); 
 		}
 
 		this.draw(ctx);

@@ -1,5 +1,6 @@
 import Spaceship from "./spaceship"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
+import {deg2rad} from "./externals/utils"/*EXT*/
 
 const canv_bg = document.querySelector("#canvas_bg") as HTMLCanvasElement;
 const ctx_bg = canv_bg.getContext("2d") as CanvasRenderingContext2D;
@@ -20,9 +21,9 @@ function resizeHandler(e : UIEvent){
 
 window.addEventListener("resize", resizeHandler);
 
-let sh = new Spaceship(canv.width/2 - 10, canv.height/2, 18, 20, "#0f0", (0 * Math.PI)/180, 0, 10);
-sh.velo2D = new Vector(0, -100/100);
-sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
+const KEYS = {
+	"U" : 'ArrowUp', "D" : 'ArrowDown', "R" : "ArrowRight", "L" : "ArrowLeft", "S" : " "
+} as const
 
 function drawBackground(){
 	let w = ctx_bg.canvas.width, h = ctx_bg.canvas.height;
@@ -40,12 +41,41 @@ function drawBackground(){
 	ctx_bg.closePath();
 	sh.draw(ctx);
 }
-setTimeout(()=>{
-	sh.speedUp(new Vector(0, -200/100));
-	setTimeout(()=>{
-		sh.speedDown(new Vector(0, -100/100));
-	}, 2000)
-}, 2000)
+
+let initialSpeed = new Vector(0, +80/100);
+let initDeg = 0;
+let g = .2; // thrust (when pushing fuel)
+let sh = new Spaceship(canv.width/2 - 10, canv.height/2, 18, 20, "#0f0", deg2rad(initDeg), 0, 10);
+
+sh.velo2D = initialSpeed;
+sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
+
 
 drawBackground();
 requestAnimationFrame(sh.move.bind(sh, ctx));
+window.addEventListener("keydown", (e : KeyboardEvent)=>{
+	if(Object.values(KEYS).includes(e.key as typeof KEYS["U"])) e.preventDefault();
+	switch(e.key){
+		case KEYS.U:
+			if((~~sh.vy <= -3 || ~~sh.vy >= 3 || ~~sh.vx >= 3 || ~~sh.vx <= -3)){ // flooring
+				sh.speedDown(g);
+				return;
+			}
+			sh.speedUp(g);
+			break;
+		case KEYS.D:
+			break;
+		case KEYS.R:
+			initDeg = initDeg < 360 ? initDeg + 10 : 0;
+			sh.rotation = deg2rad(initDeg);
+			break;
+		case KEYS.L:
+			initDeg = initDeg > 0 ? initDeg - 10 : 355;
+			sh.rotation = deg2rad(initDeg);
+			break;
+		case KEYS.S:
+			break;
+		default:
+			return;
+	}
+});
