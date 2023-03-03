@@ -1,9 +1,12 @@
 import Actor from "./actor"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
+import {strip} from "./externals/utils"/*EXT*/
 
 class Spaceship extends Actor{
-	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number){
-		super(x, y, w, h, color, rotation, vx, vy);
+	isThrustApplied : boolean;
+	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number, ctx?: CanvasRenderingContext2D){
+		super(x, y, w, h, color, rotation, vx, vy, ctx);
+		this.isThrustApplied = false;
 	}
 	draw(ctx : CanvasRenderingContext2D) : void {
 		ctx.save();
@@ -16,46 +19,55 @@ class Spaceship extends Actor{
 		ctx.strokeStyle = this.color;
 		ctx.fillStyle = this.color;
 		ctx.stroke();
-		ctx.fill();
+		ctx.fill();	
+		if(this.isThrustApplied)
+			this.drawPlasma(ctx);	
 		ctx.restore();
+		
 	}
+/*
+	move(){
+		super.move(this.ctx as CanvasRenderingContext2D);
+		this.drawPlasma(this.ctx as CanvasRenderingContext2D)
+	}
+*/
+		speedUp(g : number){
+			let x = g * Math.sin(this.rotation),
+					y = g * Math.cos(this.rotation);
 
-	speedUp(g : number){
-		let x = g * Math.sin(this.rotation), y = g * Math.cos(this.rotation);
-		this.velo2D = this.velo2D.add(
-			new Vector(-x, y)
-		);
+			if(this.velo2D.x > 4 || this.velo2D.x < -4) 
+				this.velo2D =  new Vector(this.velo2D.x < 0 ? -4 : 4, this.velo2D.y) ;
+			if(this.velo2D.y > 4 || this.velo2D.y < -4) 
+				this.velo2D =  new Vector(this.velo2D.x, this.velo2D.y < 0 ? -4 : 4) ;
+
+			this.velo2D = this.velo2D.add(
+				new Vector(-x, y)
+			);
+			this.isThrustApplied = true;	
 	}
 	speedDown(g : number){
 		let x = g * Math.sin(this.rotation), y = g * Math.cos(this.rotation);
 		this.velo2D = this.velo2D.subtract(
-			new Vector(x, -y)
+			new Vector(-x, y)
 		);	
 	}
+	private drawPlasma(ctx : CanvasRenderingContext2D){
+		ctx.beginPath();
+		ctx.moveTo(this.w/4 - 2, this.h/2);
+		ctx.lineTo(this.w/4 + 0,  this.h);
+		ctx.lineTo(this.w/4 + 2, this.h/2);
+		ctx.closePath();
+		ctx.moveTo(-this.w/2 + 1 + 2, this.h/2);
+		ctx.lineTo(-this.w/2 + 3 + 2,  this.h);
+		ctx.lineTo(-this.w/2 + 5 + 2, this.h/2);
+		ctx.closePath();
+		ctx.strokeStyle = ctx.fillStyle = "#f2f";
+		ctx.stroke();
+		ctx.fill();
 
-	move(ctx : CanvasRenderingContext2D){
-		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-		this.pos2D = this.pos2D.subtract(this.velo2D);
-
-		if(this.pos2D.x <= 0){
-			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
-		}
-
-		if(this.pos2D.y <= 0){
-			this.pos2D = new Vector(this.pos2D.x, ctx.canvas.height); 
-		}
-
-		if(this.pos2D.x > ctx.canvas.width){
-			this.pos2D = new Vector(0, this.pos2D.y); 
-		}
-
-		if(this.pos2D.y > ctx.canvas.height){
-			this.pos2D = new Vector(this.pos2D.x, 0); 
-		}
-
-		this.draw(ctx);
-		requestAnimationFrame(this.move.bind(this, ctx));
 	}
+
+
 	
 }
 
