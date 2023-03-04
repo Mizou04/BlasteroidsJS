@@ -62,7 +62,7 @@ export default class Vector2D{
 		return Math.acos(vec1.dotProduct(vec2)/(vec1.length()*vec2.length()));
 	}
 
-	distance(vec1 : Vector2D,vec2 : Vector2D){
+	static distance(vec1 : Vector2D,vec2 : Vector2D){
 		return (vec1.subtract(vec2)).length(); 
 	}
 }		

@@ -1,4 +1,6 @@
 import Spaceship from "./spaceship"/*EXT*/
+import Rock from "./rock"/*EXT*/
+import Bullet from "./bullet"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
 import {deg2rad} from "./externals/utils"/*EXT*/
 
@@ -42,17 +44,68 @@ function drawBackground(){
 	sh.draw(ctx);
 }
 
+let rocks : Rock[] = [];
+
 let initialSpeed = new Vector(0, +80/100);
 let initDeg = 0;
 let g = .2; // thrust (when pushing fuel)
 let sh = new Spaceship(canv.width/2 - 10, canv.height/2, 18, 20, "#0f0", deg2rad(initDeg), 0, 10, ctx);
 
-sh.velo2D = initialSpeed;
 sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
+sh.velo2D = initialSpeed;
 
+for(let i = 1; i < 5; i++){
+	rocks.push(new Rock(
+		canv.width*Math.random(),
+		canv.height * Math.random(),
+		15,
+		15,
+		"#f0f",
+		deg2rad(Math.random()*360),
+		Math.random()*2 - Math.random()*2,
+		Math.random()*2 - Math.random()*2
+	));
+}
+
+function rocksDrawer(){
+	for(let j = 0; j < rocks.length; j++){
+		/*
+		for(let i = 0; i < rocks.length; i++){
+			if(j != i){
+				if(
+					rocks[j].x < rocks[i].x + rocks[i].w &&
+					rocks[j].x + rocks[j].w > rocks[i].x &&
+					rocks[j].y < rocks[i].y + rocks[i].h &&
+					rocks[j].h + rocks[j].y > rocks[i].y
+				) {
+					// Collision detected!
+					rocks[j].velo2D = new Vector(
+						rocks[j].vx * -Math.cos(rocks[j].rotation),
+						rocks[j].vy * -Math.cos(rocks[j].rotation)
+					)
+					rocks[i].velo2D = new Vector(
+						rocks[i].vx * -Math.cos(rocks[i].rotation),
+						rocks[i].vy * -Math.cos(rocks[i].rotation)
+					)		
+				}	
+		}
+			}*/
+		rocks[j].move(ctx);
+	}	
+}
+
+function bulletsDrawer(){
+	for(let bullet of sh.bullets){
+			bullet.move(ctx);
+	}
+}
 
 function animate(){
-	sh.move(ctx);
+	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	rocksDrawer();
+	bulletsDrawer();
+	sh
+	.move(ctx);
 	requestAnimationFrame(animate);
 }
 
@@ -75,6 +128,7 @@ window.addEventListener("keydown", (e : KeyboardEvent)=>{
 			sh.rotation = deg2rad(initDeg);
 			break;
 		case KEYS.S:
+			sh.fire(ctx);
 			break;
 		default:
 			return;

@@ -1,14 +1,16 @@
 import Actor from "./actor"/*EXT*/
+import Bullet from "./bullet"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
-import {strip} from "./externals/utils"/*EXT*/
 
 class Spaceship extends Actor{
-	isThrustApplied : boolean;
+	private isThrustApplied : boolean;
+	public bullets : Bullet[];
 	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number, ctx?: CanvasRenderingContext2D){
 		super(x, y, w, h, color, rotation, vx, vy, ctx);
 		this.isThrustApplied = false;
+		this.bullets = [];
 	}
-	draw(ctx : CanvasRenderingContext2D) : void {
+	draw(ctx : CanvasRenderingContext2D) {
 		ctx.save();
 		ctx.translate(this.pos2D.x, this.pos2D.y);
 		ctx.rotate(this.rotation);
@@ -23,27 +25,43 @@ class Spaceship extends Actor{
 		if(this.isThrustApplied)
 			this.drawPlasma(ctx);	
 		ctx.restore();
-		
+		return this;
 	}
-/*
-	move(){
+
+	move(ctx : CanvasRenderingContext2D){
 		super.move(this.ctx as CanvasRenderingContext2D);
-		this.drawPlasma(this.ctx as CanvasRenderingContext2D)
+		if(this.pos2D.x <= 0){
+			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
+		}
+
+		if(this.pos2D.y <= 0){
+			this.pos2D = new Vector(this.pos2D.x, ctx.canvas.height); 
+		}
+
+		if(this.pos2D.x > ctx.canvas.width){
+			this.pos2D = new Vector(0, this.pos2D.y); 
+		}
+
+		if(this.pos2D.y > ctx.canvas.height){
+			this.pos2D = new Vector(this.pos2D.x, 0); 
+		}
+		return this;
 	}
-*/
-		speedUp(g : number){
-			let x = g * Math.sin(this.rotation),
-					y = g * Math.cos(this.rotation);
 
-			if(this.velo2D.x > 4 || this.velo2D.x < -4) 
-				this.velo2D =  new Vector(this.velo2D.x < 0 ? -4 : 4, this.velo2D.y) ;
-			if(this.velo2D.y > 4 || this.velo2D.y < -4) 
-				this.velo2D =  new Vector(this.velo2D.x, this.velo2D.y < 0 ? -4 : 4) ;
+	speedUp(g : number){
+		let x = g * Math.sin(this.rotation),
+			y = g * Math.cos(this.rotation);
 
-			this.velo2D = this.velo2D.add(
-				new Vector(-x, y)
-			);
-			this.isThrustApplied = true;	
+		if(this.velo2D.x > 4 || this.velo2D.x < -4) 
+			this.velo2D =  new Vector(this.velo2D.x < 0 ? -4 : 4, this.velo2D.y) ;
+		if(this.velo2D.y > 4 || this.velo2D.y < -4) 
+			this.velo2D =  new Vector(this.velo2D.x, this.velo2D.y < 0 ? -4 : 4) ;
+
+		this.velo2D = this.velo2D.add(
+			new Vector(-x, y)
+		);
+		this.isThrustApplied = true;
+		return this;
 	}
 	speedDown(g : number){
 		let x = g * Math.sin(this.rotation), y = g * Math.cos(this.rotation);
@@ -64,10 +82,25 @@ class Spaceship extends Actor{
 		ctx.strokeStyle = ctx.fillStyle = "#f2f";
 		ctx.stroke();
 		ctx.fill();
-
 	}
-
-
+	fire(ctx : CanvasRenderingContext2D){
+		this.bullets.push(
+			new Bullet(
+				this.x + this.w/2,
+				this.y - this.h - 2,
+				2, 2,
+				"#fff",
+				this.rotation,
+				this.vx + .5,
+				this.vy + .5
+			));
+		
+		this.bullets.filter(bullet => 			
+				(bullet.x < ctx.canvas.width 
+				|| bullet.x > 0 
+				|| bullet.y < ctx.canvas.height 
+				|| bullet.y > 0) && bullet)
+	}
 	
 }
 

@@ -10,7 +10,7 @@ import Vector from "./externals/Vector2D"/*EXT*/
 		this.color = color;
 		this.rotation = rotation;
 		this.vx = vx;
-		this.y = y;
+		this.vy = vy;
 		this.ctx = ctx;
 	}
 	  get pos2D (){
@@ -34,26 +34,11 @@ import Vector from "./externals/Vector2D"/*EXT*/
 
 	draw(ctx : CanvasRenderingContext2D) : void {}
 	move(ctx : CanvasRenderingContext2D){
-		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 		this.pos2D = this.pos2D.subtract(this.velo2D);
 
-		if(this.pos2D.x <= 0){
-			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
-		}
-
-		if(this.pos2D.y <= 0){
-			this.pos2D = new Vector(this.pos2D.x, ctx.canvas.height); 
-		}
-
-		if(this.pos2D.x > ctx.canvas.width){
-			this.pos2D = new Vector(0, this.pos2D.y); 
-		}
-
-		if(this.pos2D.y > ctx.canvas.height){
-			this.pos2D = new Vector(this.pos2D.x, 0); 
-		}
-
 		this.draw(ctx);
+		ctx.closePath()
+		return this;
 	}
 
 }
