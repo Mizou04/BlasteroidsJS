@@ -1,4 +1,5 @@
 import Actor from "./actor"/*EXT*/
+import Vector from "./externals/Vector2D"/*EXT*/
 
 export default class Rock extends Actor{
 	constructor(
@@ -13,7 +14,25 @@ export default class Rock extends Actor{
 		ctx?: CanvasRenderingContext2D){
 		super(x, y, w, h, color, rotation, vx, vy, ctx);
 	}
-	
+	move(ctx : CanvasRenderingContext2D){
+		super.move(ctx);
+		if(this.pos2D.x <= 0){
+			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
+		}
+
+		if(this.pos2D.y <= 0){
+			this.pos2D = new Vector(this.pos2D.x, ctx.canvas.height); 
+		}
+
+		if(this.pos2D.x > ctx.canvas.width){
+			this.pos2D = new Vector(0, this.pos2D.y); 
+		}
+
+		if(this.pos2D.y > ctx.canvas.height){
+			this.pos2D = new Vector(this.pos2D.x, 0); 
+		}
+		return this;
+	}	
 	draw(ctx : CanvasRenderingContext2D){
 		ctx.save();
 		ctx.translate(this.pos2D.x, this.pos2D.y);

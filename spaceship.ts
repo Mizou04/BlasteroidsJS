@@ -3,7 +3,7 @@ import Bullet from "./bullet"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
 
 class Spaceship extends Actor{
-	private isThrustApplied : boolean;
+	public isThrustApplied : boolean;
 	public bullets : Bullet[];
 	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number, ctx?: CanvasRenderingContext2D){
 		super(x, y, w, h, color, rotation, vx, vy, ctx);
@@ -25,11 +25,15 @@ class Spaceship extends Actor{
 		if(this.isThrustApplied)
 			this.drawPlasma(ctx);	
 		ctx.restore();
+		for(let bullet of this.bullets){
+			bullet.move(ctx);
+		}	
 		return this;
 	}
 
 	move(ctx : CanvasRenderingContext2D){
 		super.move(this.ctx as CanvasRenderingContext2D);
+		
 		if(this.pos2D.x <= 0){
 			this.pos2D = new Vector(ctx.canvas.width, this.pos2D.y); 
 		}
@@ -86,20 +90,22 @@ class Spaceship extends Actor{
 	fire(ctx : CanvasRenderingContext2D){
 		this.bullets.push(
 			new Bullet(
-				this.x + this.w/2,
-				this.y - this.h - 2,
+				this.pos2D.x,
+				this.pos2D.y,
 				2, 2,
 				"#fff",
 				this.rotation,
-				this.vx + .5,
-				this.vy + .5
+				5, //doesn't matter
+				5 //doesn't matter
 			));
-		
-		this.bullets.filter(bullet => 			
-				(bullet.x < ctx.canvas.width 
-				|| bullet.x > 0 
-				|| bullet.y < ctx.canvas.height 
-				|| bullet.y > 0) && bullet)
+	
+	this.bullets = this.bullets.filter(
+				bullet => 			
+				(bullet.pos2D.x < ctx.canvas.width 
+			&& bullet.pos2D.x > 0 
+			&& bullet.pos2D.y < ctx.canvas.height 
+			&& bullet.pos2D.y > 0) )
+
 	}
 	
 }

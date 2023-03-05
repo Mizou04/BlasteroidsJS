@@ -94,16 +94,10 @@ function rocksDrawer(){
 	}	
 }
 
-function bulletsDrawer(){
-	for(let bullet of sh.bullets){
-			bullet.move(ctx);
-	}
-}
 
 function animate(){
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	rocksDrawer();
-	bulletsDrawer();
 	sh
 	.move(ctx);
 	requestAnimationFrame(animate);

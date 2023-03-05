@@ -35,9 +35,7 @@ import Vector from "./externals/Vector2D"/*EXT*/
 	draw(ctx : CanvasRenderingContext2D) : void {}
 	move(ctx : CanvasRenderingContext2D){
 		this.pos2D = this.pos2D.subtract(this.velo2D);
-
 		this.draw(ctx);
-		ctx.closePath()
 		return this;
 	}
 
