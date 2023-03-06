@@ -38,9 +38,17 @@ export default class Rock extends Actor{
 		ctx.translate(this.pos2D.x, this.pos2D.y);
 		ctx.rotate(this.rotation);	
 		ctx.beginPath();
-		ctx.fillStyle = this.color;
-		ctx.arc(-this.w/2, -this.h/2, (this.w+this.h)/2, Math.PI*2, 0, true);
-		ctx.fill();
+		ctx.strokeStyle = this.color;
+		ctx.lineWidth = 2;
+		ctx.moveTo(0, 0);
+		ctx.lineTo(-this.w, 0);
+		ctx.lineTo(-this.w, -this.h/2);
+		ctx.lineTo(-4, -this.h);
+		ctx.lineTo(-4, -this.h + this.h/3);
+		ctx.lineTo(this.w/2, this.h/2);
+		ctx.lineTo(this.w/2, 0);
+		ctx.closePath();
+		ctx.stroke();
 		ctx.restore();
 		return this;
 	}
