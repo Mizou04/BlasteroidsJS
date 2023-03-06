@@ -1,6 +1,6 @@
 import Spaceship from "./spaceship"/*EXT*/
 import Rock from "./rock"/*EXT*/
-import Bullet from "./bullet"/*EXT*/
+//import Bullet from "./bullet"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
 import {deg2rad} from "./externals/utils"/*EXT*/
 
@@ -128,12 +128,12 @@ window.addEventListener("keydown", (e : KeyboardEvent)=>{
 			return;
 	}
 });
-
+/*
 window.addEventListener("keyup", (e : KeyboardEvent)=>{
 	if(Object.values(KEYS).includes(e.key as typeof KEYS["U"])) e.preventDefault();
 	switch(e.key){
 		case KEYS.U:
-			sh.isThrustApplied = false;
+//			sh.isThrustApplied = false;
 		break;
 		case KEYS.D:
 			break;
@@ -146,5 +146,5 @@ window.addEventListener("keyup", (e : KeyboardEvent)=>{
 		default:
 			return;
 	}
-
 })
+*/

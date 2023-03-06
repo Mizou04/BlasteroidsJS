@@ -3,7 +3,7 @@ import Bullet from "./bullet"/*EXT*/
 import Vector from "./externals/Vector2D"/*EXT*/
 
 class Spaceship extends Actor{
-	public isThrustApplied : boolean;
+	private isThrustApplied : boolean;
 	public bullets : Bullet[];
 	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number, ctx?: CanvasRenderingContext2D){
 		super(x, y, w, h, color, rotation, vx, vy, ctx);
@@ -24,6 +24,7 @@ class Spaceship extends Actor{
 		ctx.fill();	
 		if(this.isThrustApplied)
 			this.drawPlasma(ctx);	
+		this.isThrustApplied = false;
 		ctx.restore();
 		for(let bullet of this.bullets){
 			bullet.move(ctx);
