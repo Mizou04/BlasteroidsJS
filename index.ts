@@ -54,7 +54,7 @@ let sh = new Spaceship(canv.width/2 - 10, canv.height/2, 18, 20, "#0f0", deg2rad
 sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
 sh.velo2D = initialSpeed;
 
-for(let i = 1; i < 5; i++){
+for(let i = 1; i <= 2; i++){
 	rocks.push(new Rock(
 		canv.width*Math.random(),
 		canv.height * Math.random(),
@@ -67,30 +67,29 @@ for(let i = 1; i < 5; i++){
 	));
 }
 
+function rockDestroy(){
+	for(let i = 0; i < rocks.length; ++i)
+	for(let j = 0; j < sh.bullets.length; j++){
+		if(
+			sh.bullets[j].x < rocks[i].x + rocks[i].w 
+			&&
+			sh.bullets[j].x + sh.bullets[j].w > rocks[i].x 
+			&&
+			sh.bullets[j].y < rocks[i].y + rocks[i].h 
+			&&
+			sh.bullets[j].h + sh.bullets[j].y > rocks[i].y
+		) {
+			// Collision detected!
+			sh.bullets = sh.bullets.filter(bul => bul != sh.bullets[j]);		
+			rocks = rocks.filter(bul => bul != rocks[i]);		
+		}	
+	}
+}
+
 function rocksDrawer(){
-	for(let j = 0; j < rocks.length; j++){
-		/*
-		for(let i = 0; i < rocks.length; i++){
-			if(j != i){
-				if(
-					rocks[j].x < rocks[i].x + rocks[i].w &&
-					rocks[j].x + rocks[j].w > rocks[i].x &&
-					rocks[j].y < rocks[i].y + rocks[i].h &&
-					rocks[j].h + rocks[j].y > rocks[i].y
-				) {
-					// Collision detected!
-					rocks[j].velo2D = new Vector(
-						rocks[j].vx * -Math.cos(rocks[j].rotation),
-						rocks[j].vy * -Math.cos(rocks[j].rotation)
-					)
-					rocks[i].velo2D = new Vector(
-						rocks[i].vx * -Math.cos(rocks[i].rotation),
-						rocks[i].vy * -Math.cos(rocks[i].rotation)
-					)		
-				}	
-		}
-			}*/
-		rocks[j].move(ctx);
+	for(let i = 0; i < rocks.length; i++){
+		
+		rocks[i]?.move(ctx);
 	}	
 }
 
@@ -98,6 +97,8 @@ function rocksDrawer(){
 function animate(){
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 	rocksDrawer();
+	if(sh.bullets.length && rocks.length)
+		rockDestroy();
 	sh
 	.move(ctx);
 	requestAnimationFrame(animate);

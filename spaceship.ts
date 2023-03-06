@@ -24,7 +24,7 @@ class Spaceship extends Actor{
 		ctx.fill();	
 		if(this.isThrustApplied)
 			this.drawPlasma(ctx);	
-		this.isThrustApplied = false;
+		setTimeout(()=>this.isThrustApplied = false, 500);
 		ctx.restore();
 		for(let bullet of this.bullets){
 			bullet.move(ctx);
