@@ -45,93 +45,187 @@ function drawBackground(){
 		ctx_bg.closePath();
 	}	
 	ctx_bg.closePath();
-	sh.draw(ctx);
 }
 
-let rocks : Rock[] = [];
+class Game {
+	state : 'before_start' | 'started' | 'won' | 'lost' | 'paused'
+	rocks : Rock[];
+	initialSpeed : Vector;
+	initDeg : number;
+	g : number; // thrust (when pushing fuel)
+	sh : Spaceship;
+	score : number;
+	private heart : string = "❤";
+	lives : number = 3;
+	level : number;
+	private boomed : boolean;
+	constructor(){
+		this.state = 'started';
+		this.rocks = [];
+		this.boomed = false;
+		this.initialSpeed = new Vector(0, +80/100);
+		this.initDeg = 0;
+		this.g = .2; // thrust (when pushing fuel)
+		this.score = 0;
+		this.level = 1;
+		this.sh = {} as Spaceship;
+		}
+	
+	init(){
+		this.respawnRocks();
+		this.drawState();
+		this.score = 0;
+		this.level = 1;
+		this.lives = 3;
+		this.respawnSpaceship();
+	}
 
-let initialSpeed = new Vector(0, +80/100);
-let initDeg = 0;
-let g = .2; // thrust (when pushing fuel)
-let sh = new Spaceship(canv.width/2 - 10, canv.height/2, 18, 20, "#0f0", deg2rad(initDeg), 0, 10, ctx);
-let score = 0;
-let heart = "❤"
+	private respawnRocks(){
+		this.rocks = [];
+		for(let i = 1; i <= this.level * 2; i++){
+			this.rocks.push(new Rock(
+				canv.width*Math.random(),
+				canv.height * Math.random(),
+				15,
+				15,
+				"#f0f",
+				deg2rad(Math.random()*360),
+				Math.random()*2 - Math.random()*2,
+				Math.random()*2 - Math.random()*2
+			));
+		}	
+	}
+	private respawnSpaceship(){
+		this.sh = new Spaceship(
+						canv.width/2 - 10,
+						canv.height/2,
+						18, 20,
+						"#0f0",
+						deg2rad(this.initDeg),
+						0, 10,
+						ctx);
+						this.sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
+						this.sh.velo2D = this.initialSpeed;
+	}
 
-sh.pos2D = new Vector(canv.width/2 - 10, canv.height/2)
-sh.velo2D = initialSpeed;
+	loops(){
+		this.spaceshipDestroy();
+		this.rocksDrawer();
+		if(this.sh.bullets.length && this.rocks.length)
+			this.rockDestroy();
+		this.sh.move(ctx);
+		this.drawState();
+	}
 
-for(let i = 1; i <= 5; i++){
-	rocks.push(new Rock(
-		canv.width*Math.random(),
-		canv.height * Math.random(),
-		15,
-		15,
-		"#f0f",
-		deg2rad(Math.random()*360),
-		Math.random()*2 - Math.random()*2,
-		Math.random()*2 - Math.random()*2
-	));
-}
-
-function spaceshipDestroy(){
-	for(let i = 0; i < rocks.length; i++)
+	private spaceshipDestroy(){
+		for(let i = 0; i < this.rocks.length; i++)
 		if(
-			sh.pos2D.x < rocks[i].x + rocks[i].w 
-			&&
-			sh.pos2D.x + sh.w > rocks[i].x 
-			&&
-			sh.pos2D.y < rocks[i].y + rocks[i].h 
-			&&
-			sh.h + sh.pos2D.y > rocks[i].y
+			this.sh.pos2D.x < this.rocks[i].x + this.rocks[i].w 
+		&&
+			this.sh.pos2D.x + this.sh.w > this.rocks[i].x 
+		&&
+			this.sh.pos2D.y < this.rocks[i].y + this.rocks[i].h 
+		&&
+			this.sh.h + this.sh.pos2D.y > this.rocks[i].y
 		){
+			if(this.lives >= 1){
+				this.lives--;
+				this.respawnRocks();
+				this.respawnSpaceship();
+			}
+			if(this.lives == 0) {
+				console.log("you lost") ;
+				this.init();
+			}
 			//sh.w = 0;
 			//alert("you lost");
 		}
-}
-let boomed = false;
-function rockDestroy(){
-	for(let i = 0; i < rocks.length; ++i)
-	for(let j = 0; j < sh.bullets.length; j++){
-		if(
-			sh.bullets[j]?.x < rocks[i]?.x + rocks[i]?.w 
-			&&
-			sh.bullets[j]?.x + sh.bullets[j]?.w > rocks[i]?.x 
-			&&
-			sh.bullets[j]?.y < rocks[i]?.y + rocks[i]?.h 
-			&&
-			sh.bullets[j]?.h + sh.bullets[j]?.y > rocks[i]?.y
-		) {
-			// Collision detected!
-			sh.bullets = sh.bullets.filter(bul => bul != sh.bullets[j]!);		
-			rocks = rocks.filter(bul => bul != rocks[i]!);		
-			boomed = true;
+	}
+
+	rockDestroy(){
+		for(let i = 0; i < this.rocks.length; ++i){
+			for(let j = 0; j < this.sh.bullets.length; j++){
+				if(
+					this.sh.bullets[j]?.x < this.rocks[i]?.x + this.rocks[i]?.w 
+				&&
+					this.sh.bullets[j]?.x + this.sh.bullets[j]?.w > this.rocks[i]?.x 
+				&&
+					this.sh.bullets[j]?.y < this.rocks[i]?.y + this.rocks[i]?.h 
+				&&
+					this.sh.bullets[j]?.h + this.sh.bullets[j]?.y > this.rocks[i]?.y
+				) {
+					// Collision detected!
+					this.sh.bullets = this.sh.bullets.filter(bul => bul != this.sh.bullets[j]!);		
+					this.rocks = this.rocks.filter(bul => bul != this.rocks[i]!);		
+					this.boomed = true;
+				}	
+			}
+			if(!this.rocks.length) this.levelUp();
+		}
+			
+		if(this.boomed){
+			this.score += 10;
+			this.drawState();
+		}
+		this.boomed = false;
+	}
+
+	rocksDrawer(){
+		for(let i = 0; i < this.rocks.length; i++){
+			this.rocks[i]?.move(ctx);
 		}	
 	}
-	if(boomed){
-		score += 10;
-		drawState();
+
+	levelUp(){
+		if(this.level < 10) this.level++;
+		this.respawnSpaceship();
+		this.respawnRocks();
 	}
-	boomed = false;
+
+	private drawState(){
+		ctx_st.beginPath();
+		ctx_st.clearRect(0, 0, ctx_st.canvas.width, ctx_st.canvas.height);
+		ctx_st.fillStyle = "#f41010";
+		ctx_st.fillRect(0, 0, ctx_st.canvas.width, ctx_st.canvas.height);
+		this.drawScore();
+		this.drawLifes();
+		this.drawLevel();
+	}
+
+	private drawLevel(){
+		ctx_st.beginPath();
+		ctx_st.fillStyle = "#fff";
+		ctx_st.font = "20px sans-serif";
+		ctx_st.fillText(`level ${this.level}`, canv_st.width/2-30, canv_st.height/2 + 5);
+		ctx_st.closePath();
+	}
+	private drawScore(){
+		ctx_st.beginPath();
+		ctx_st.fillStyle = "#fff"
+		ctx_st.font = "16px serif";
+		ctx_st.fillText(this.score.toString(), 30, ctx_st.canvas.height/2 + 10);
+		ctx_st.closePath();
+	}
+
+	private drawLifes(){
+		ctx_st.beginPath();
+		ctx_st.fillStyle = "#fff"
+		ctx_st.font = "16px serif";
+		ctx_st.fillText(this.heart.repeat(this.lives), ctx_st.canvas.width - 48, ctx_st.canvas.height/2 + 10);
+		ctx_st.closePath();
+	}
+
 }
 
-function rocksDrawer(){
-	for(let i = 0; i < rocks.length; i++){
-		
-		rocks[i]?.move(ctx);
-	}	
-}
+
+let game = new Game();
+game.init();
 
 
 function animate(){
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-	rocksDrawer();
-	spaceshipDestroy();
-	if(sh.bullets.length && rocks.length)
-		rockDestroy();
-	if(!rocks.length) alert(`you win, score is ${score}`)
-	sh
-	.move(ctx);
-	requestAnimationFrame(animate);
+	game.loops();
+		requestAnimationFrame(animate);
 }
 
 drawBackground();
@@ -140,53 +234,23 @@ window.addEventListener("keydown", (e : KeyboardEvent)=>{
 	if(Object.values(KEYS).includes(e.key as typeof KEYS["U"])) e.preventDefault();
 	switch(e.key){
 		case KEYS.U:
-			sh.speedUp(g);
+			game.sh.speedUp();
 			break;
 		case KEYS.D:
 			break;
 		case KEYS.R:
-			initDeg = initDeg < 360 ? initDeg + 10 : 10;
-			sh.rotation = deg2rad(initDeg);
+			game.initDeg = game.initDeg < 360 ? game.initDeg + 10 : 10;
+			game.sh.rotation = deg2rad(game.initDeg);
 			break;
 		case KEYS.L:
-			initDeg = initDeg > 0 ? initDeg - 10 : 350;
-			sh.rotation = deg2rad(initDeg);
+			game.initDeg = game.initDeg > 0 ? game.initDeg - 10 : 350;
+			game.sh.rotation = deg2rad(game.initDeg);
 			break;
 		case KEYS.S:
-			sh.fire(ctx);
+			game.sh.fire(ctx);
 			break;
 		default:
 			return;
 	}
 });
-
-function drawState(){
-	ctx_st.beginPath();
-	ctx_st.clearRect(0, 0, ctx_st.canvas.width, ctx_st.canvas.height);
-	ctx_st.fillStyle = "#f41010";
-	ctx_st.fillRect(0, 0, ctx_st.canvas.width, ctx_st.canvas.height);
-	drawScore();
-	drawLifes();
-}
-drawState();
-
-function drawScore(){
-	ctx_st.beginPath();
-	ctx_st.strokeStyle = "#fff"
-	ctx_st.fillStyle = "#fff"
-	ctx_st.font = "20px serif";
-	ctx_st.strokeText(score.toString(), 30, ctx_st.canvas.height/2 + 10);
-	ctx_st.fillText(score.toString(), 30, ctx_st.canvas.height/2 + 10);
-	ctx_st.closePath();
-}
-
-function drawLifes(){
-	ctx_st.beginPath();
-	ctx_st.strokeStyle = "#fff"
-	ctx_st.fillStyle = "#fff"
-	ctx_st.font = "20px serif";
-	ctx_st.strokeText(heart, ctx_st.canvas.width - 40, ctx_st.canvas.height/2 + 10);
-	ctx_st.fillText(heart, ctx_st.canvas.width - 40, ctx_st.canvas.height/2 + 10);
-	ctx_st.closePath();
-}
 

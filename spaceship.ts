@@ -6,11 +6,13 @@ class Spaceship extends Actor{
 	private isThrustApplied : boolean;
 	private timeout : number;
 	public bullets : Bullet[];
+	public g : number;
 	constructor(public x : any, public y : any, public w : number, public h : number, public color : string, public rotation : number, public vx : number, public vy: number, ctx?: CanvasRenderingContext2D){
 		super(x, y, w, h, color, rotation, vx, vy, ctx);
 		this.isThrustApplied = false;
 		this.bullets = [];
 		this.timeout = 0;
+		this.g = 0.2;
 	}
 	draw(ctx : CanvasRenderingContext2D) {
 		ctx.save();
@@ -22,7 +24,7 @@ class Spaceship extends Actor{
 		ctx.lineTo(0, -this.h/2);
 		ctx.strokeStyle = this.color;
 		ctx.fillStyle = this.color;
-		ctx.stroke();
+		//ctx.stroke();
 		ctx.fill();	
 		if(this.isThrustApplied){
 			this.drawPlasma(ctx);	
@@ -58,9 +60,9 @@ class Spaceship extends Actor{
 		return this;
 	}
 
-	speedUp(g : number){
-		let x = g * Math.sin(this.rotation),
-			y = g * Math.cos(this.rotation);
+	speedUp(){
+		let x = this.g * Math.sin(this.rotation),
+			y = this.g * Math.cos(this.rotation);
 
 		if(this.velo2D.x > 4 || this.velo2D.x < -4) 
 			this.velo2D =  new Vector(this.velo2D.x < 0 ? -4 : 4, this.velo2D.y) ;
